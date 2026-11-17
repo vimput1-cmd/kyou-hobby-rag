@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kyou Hobby Shop ~ Katalog Anime Figure & AI Chatbot RAG</title>
+  <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Quicksand', sans-serif; }
+    body { background: linear-gradient(135deg, #fff5f8 0%, #f3efff 100%); color: #2d2338; min-height: 100vh; }
+    header {
+      background: linear-gradient(90deg, #ff65a3 0%, #9b6bff 100%);
+      color: white; padding: 32px 20px; text-align: center;
+      box-shadow: 0 4px 20px rgba(255, 101, 163, 0.3);
+    }
+    header h1 { font-size: 2.2rem; margin-bottom: 8px; }
+    header p { font-size: 1rem; opacity: 0.95; max-width: 680px; margin: 0 auto 14px; }
+    .shop-links { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+    .shop-links a {
+      background: rgba(255,255,255,0.2); color: white; text-decoration: none;
+      padding: 8px 16px; border-radius: 20px; font-weight: 600; font-size: 0.9rem;
+      border: 1px solid rgba(255,255,255,0.5); transition: 0.2s;
+    }
+    .shop-links a:hover { background: white; color: #ff65a3; }
+    .container { max-width: 1100px; margin: 30px auto; padding: 0 20px 90px; }
+    .filter-bar { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-bottom: 25px; }
+    .filter-btn {
+      padding: 10px 20px; border-radius: 25px; border: 2px solid #ffb3d1;
+      background: white; color: #7a4b69; font-weight: 700; cursor: pointer; transition: 0.2s;
+    }
+    .filter-btn.active, .filter-btn:hover { background: #ff65a3; color: white; border-color: #ff65a3; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 22px; }
+    .card {
+      background: white; border-radius: 16px; overflow: hidden;
+      box-shadow: 0 6px 18px rgba(155, 107, 255, 0.12); border: 1px solid #ffe0ec;
+      display: flex; flex-direction: column; justify-content: space-between; padding: 18px;
+      transition: transform 0.25s ease;
+    }
+    .card:hover { transform: translateY(-5px); }
+    .cat-badge {
+      display: inline-block; background: #fff0f6; color: #ff4791; font-size: 0.78rem;
+      font-weight: 700; padding: 4px 12px; border-radius: 12px; margin-bottom: 10px; width: fit-content;
+    }
+    .card h3 { font-size: 1.05rem; margin-bottom: 8px; color: #2b1f38; }
+    .card p { font-size: 0.88rem; color: #6c5b7b; margin-bottom: 14px; line-height: 1.45; }
+    .price { font-size: 1.2rem; font-weight: 700; color: #845ec2; margin-bottom: 14px; }
+    .wa-btn {
+      display: block; text-align: center; background: #25D366; color: white;
+      text-decoration: none; padding: 10px 14px; border-radius: 12px; font-weight: 700;
+      font-size: 0.9rem; transition: 0.2s;
+    }
+    .wa-btn:hover { background: #1ebe57; }
+
+    /* Floating RAG Chatbot Widget */
+    .chat-toggle {
+      position: fixed; bottom: 24px; right: 24px; background: linear-gradient(90deg, #ff65a3, #9b6bff);
+      color: white; border: none; border-radius: 30px; padding: 14px 24px; font-size: 1rem;
+      font-weight: 700; cursor: pointer; box-shadow: 0 6px 20px rgba(255,101,163,0.45); z-index: 999;
+    }
+    .chat-box {
+      position: fixed; bottom: 85px; right: 24px; width: 360px; max-width: calc(100vw - 40px);
+      background: white; border-radius: 18px; box-shadow: 0 10px 35px rgba(0,0,0,0.18);
+      border: 2px solid #ffb3d1; display: none; flex-direction: column; overflow: hidden; z-index: 999;
+    }
+    .chat-box.open { display: flex; }
+    .chat-header {
+      background: linear-gradient(90deg, #ff65a3, #9b6bff); color: white; padding: 14px 18px;
+      font-weight: 700; display: flex; justify-content: space-between; align-items: center;
+    }
+    .chat-messages {
+      height: 320px; overflow-y: auto; padding: 14px; background: #fdf9fc;
+      display: flex; flex-direction: column; gap: 10px; font-size: 0.9rem;
+    }
+    .msg { padding: 10px 14px; border-radius: 14px; max-width: 85%; line-height: 1.45; white-space: pre-line; }
+    .msg.bot { background: #f1e8ff; color: #2d2338; align-self: flex-start; border-bottom-left-radius: 4px; }
+    .msg.user { background: #ff65a3; color: white; align-self: flex-end; border-bottom-right-radius: 4px; }
+    .chat-input-area { display: flex; border-top: 1px solid #f0e0ea; padding: 10px; background: white; gap: 8px; }
+    .chat-input-area input {
+      flex: 1; padding: 10px 12px; border: 1px solid #decce6; border-radius: 10px; outline: none;
+    }
+    .chat-input-area button {
+      background: #ff65a3; color: white; border: none; padding: 10px 16px; border-radius: 10px; font-weight: 700; cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>🌸 Kyou Hobby Shop ~ Anime Figure Catalog</h1>
+    <p>Etalase Resmi Scale Figure, Nendoroid, & Prize Figure terintegrasi dengan AI Chatbot RAG & Gateway WhatsApp</p>
+    <div class="shop-links">
+      <a href="https://kyou.id" target="_blank">🌐 Web Resmi Kyou.id</a>
+      <a href="https://shopee.co.id/search?keyword=kyou%20hobby%20shop" target="_blank">🛍️ Lapak Shopee Kyou Hobby Shop</a>
+      <a href="https://www.tokopedia.com/kyouhobbyshop" target="_blank">💚 Lapak Tokopedia Kyou</a>
+    </div>
+  </header>
+
+  <main class="container">
+    <div class="filter-bar">
+      <button class="filter-btn active" onclick="filterProducts('Semua', this)">✨ Semua Koleksi (12)</button>
+      <button class="filter-btn" onclick="filterProducts('Scale Figure', this)">👑 Scale Figure</button>
+      <button class="filter-btn" onclick="filterProducts('Nendoroid', this)">🎀 Nendoroid</button>
+      <button class="filter-btn" onclick="filterProducts('Prize Figure', this)">🎁 Prize Figure</button>
+      <button class="filter-btn" onclick="filterProducts('Mini Figure', this)">🌸 Mini Figure</button>
+    </div>
+    <div class="grid" id="productGrid"></div>
+  </main>
+
+  <button class="chat-toggle" onclick="toggleChat()">💬 Tanya AI Chatbot RAG</button>
+
+  <div class="chat-box" id="chatBox">
+    <div class="chat-header">
+      <span>🌸 Asisten RAG Kyou Hobby Shop</span>
+      <span style="cursor:pointer;" onclick="toggleChat()">✖</span>
+    </div>
+    <div class="chat-messages" id="chatMessages">
+      <div class="msg bot">Halo Kapten~♪ Selamat datang di Kyou Hobby Shop! ✨
+Silakan tanya harga figure Elysia, Frieren, Nendoroid, atau alamat toko kami ya! ♡</div>
+    </div>
+    <div class="chat-input-area">
+      <input type="text" id="chatInput" placeholder="Ketik pertanyaan produk..." onkeypress="if(event.key==='Enter') sendChat()">
+      <button onclick="sendChat()">Kirim</button>
+    </div>
+  </div>
+
+  <script>
+    // Nomor Gateway WhatsApp Bot (Ubah ke nomor WA bot kamu bila perlu)
+    const WA_NUMBER = "6281770092014";
+
+    // Basis Data Produk Hasil Scraping Kyou Hobby Shop (Sama Persis dengan data/products.csv)
+    const PRODUCTS = [
+      { nama: "PVC Figure 1/7 Elysia Herrscher of Human Ego Ver", kategori: "Scale Figure", harga: 4549000, deskripsi: "Scale figure 1/7 Elysia Herrscher of Human Ego Ver Honkai Impact 3rd dengan bonus cincin eksklusif" },
+      { nama: "PVC Figure 1/7 Elysia Hi Love Elf Ver", kategori: "Scale Figure", harga: 4250000, deskripsi: "Scale figure 1/7 Elysia Miss Pink Elf Honkai Impact 3rd edisi spesial dengan detail busur kristal" },
+      { nama: "PVC Figure Gift+ 1/8 Elysia Summer Miss Elf Ver", kategori: "Scale Figure", harga: 1349000, deskripsi: "Figure Elysia edisi pakaian musim panas Summer Miss Elf Honkai Impact 3rd ukuran 1/8 original Myethos" },
+      { nama: "PVC Figure 1/7 Frieren Sousou no Frieren Re-Release", kategori: "Scale Figure", harga: 3250000, deskripsi: "Scale figure 1/7 Frieren Beyond Journeys End dengan efek sihir dan tongkat penyihir detail tinggi" },
+      { nama: "Nendoroid Elysia Herrscher of Human Ego Ver", kategori: "Nendoroid", harga: 1049000, deskripsi: "Nendoroid chibi artikulasi Elysia Herrscher of Human Ego Ver lengkap dengan faceplate senyum dan efek panah" },
+      { nama: "Nendoroid Frieren Winter Uniform Ver", kategori: "Nendoroid", harga: 950000, deskripsi: "Nendoroid Frieren edisi mantel musim dingin dari anime Sousou no Frieren original Good Smile Company" },
+      { nama: "Nendoroid Fern Sousou no Frieren", kategori: "Nendoroid", harga: 780000, deskripsi: "Nendoroid Fern murid penyihir Frieren lengkap dengan tongkat sihir dan aksesoris ekspresi cemberut" },
+      { nama: "Nendoroid Himmel Sousou no Frieren", kategori: "Nendoroid", harga: 850000, deskripsi: "Nendoroid sang pahlawan Himmel lengkap dengan pedang pahlawan dan mahkota bunga biru" },
+      { nama: "PVC Figure Frieren and Mimic Tissue Gimmick Ver", kategori: "Prize Figure", harga: 340000, deskripsi: "Prize figure ikonik Frieren terhisap peti monster Mimic yang juga berfungsi sebagai tempat tisu" },
+      { nama: "Luminasta Figure Frieren Eternal Love Ver", kategori: "Prize Figure", harga: 340000, deskripsi: "Prize figure SEGA Luminasta Frieren dengan pose memegang cincin kenangan Himmel" },
+      { nama: "PVC Figure Elysia Little Flamechasers Ver", kategori: "Mini Figure", harga: 850000, deskripsi: "Mini figure koleksi Elysia seri Little Flamechasers Honkai Impact 3rd original miHoYo" },
+      { nama: "LookUp Figure Frieren Sousou no Frieren", kategori: "Mini Figure", harga: 720000, deskripsi: "Mini figure seri LookUp MegaHouse Frieren dengan kepala yang bisa menoleh menatap ke atas" }
+    ];
+
+    function formatIDR(n) {
+      return new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", maximumFractionDigits: 0 }).format(n);
+    }
+
+    function renderProducts(cat = "Semua") {
+      const grid = document.getElementById("productGrid");
+      const items = cat === "Semua" ? PRODUCTS : PRODUCTS.filter(p => p.kategori === cat);
+      grid.innerHTML = items.map(p => {
+        const waText = encodeURIComponent(`Halo Kyou Hobby Shop! Saya ingin menanyakan produk kategori ${p.kategori}: ${p.nama} (${formatIDR(p.harga)})`);
+        return `
+          <div class="card">
+            <div>
+              <span class="cat-badge">${p.kategori}</span>
+              <h3>${p.nama}</h3>
+              <p>${p.deskripsi}</p>
+            </div>
+            <div>
+              <div class="price">${formatIDR(p.harga)}</div>
+              <a class="wa-btn" href="https://wa.me/${WA_NUMBER}?text=${waText}" target="_blank">💬 Tanya / Pesan via WA</a>
+            </div>
+          </div>
+        `;
+      }).join("");
+    }
+
+    function filterProducts(cat, btn) {
+      document.querySelectorAll(".filter-btn").forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+      renderProducts(cat);
+    }
+
+    function toggleChat() {
+      document.getElementById("chatBox").classList.toggle("open");
+    }
+
+    // Mesin RAG Client-Side (Identik dengan lib/rag.js di Bot WhatsApp)
+    function jawabRAG(query) {
+      const q = query.toLowerCase().trim();
+      if (/^(halo|hai|hi|pagi|siang|sore|malam|p|ping)\b/.test(q) && !q.includes("figure") && !q.includes("harga")) {
+        return "Halo! Selamat datang di Kyou Hobby Shop ✨ Ada figure Elysia, Frieren, atau Nendoroid yang ingin kamu tanyakan hari ini? 😊";
+      }
+      if (/^(terima kasih|makasih|thanks|thx)\b/.test(q)) {
+        return "Sama-sama! Senang bisa membantu di Kyou Hobby Shop ✨ Jangan ragu klik tombol WhatsApp jika ingin langsung memesan ya! ♡";
+      }
+      if (q.includes("alamat") || q.includes("lokasi") || q.includes("cabang")) {
+        return "📍 Toko fisik Kyou Hobby Shop ada di Surabaya, Bekasi, Tangerang, dan Bandung. Katalog online resmi tersedia di kyou.id, Shopee, dan Tokopedia!";
+      }
+      if (q.includes("jam buka") || q.includes("operasional")) {
+        return "⏰ Kyou Hobby Shop buka Senin - Sabtu pukul 07.00 - 21.00 WIB (Online) dan toko fisik pukul 10.00 - 21.00 WIB.";
+      }
+
+      const tokens = q.replace(/[^\w\s]/g, " ").split(/\s+/).filter(t => t.length > 2);
+      const scored = PRODUCTS.map(p => {
+        let score = 0;
+        const text = `${p.nama} ${p.kategori} ${p.deskripsi}`.toLowerCase();
+        if (q.includes("semua") || q.includes("katalog")) score += 5;
+        for (const t of tokens) {
+          if (p.nama.toLowerCase().includes(t)) score += 8;
+          if (p.kategori.toLowerCase().includes(t)) score += 5;
+          if (text.includes(t)) score += 2;
+        }
+        return { p, score };
+      }).filter(x => x.score > 0).sort((a, b) => b.score - a.score).slice(0, 5);
+
+      if (scored.length === 0) {
+        return "Mohon maaf, produk tersebut belum ditemukan di katalog kami. Kami menyediakan Scale Figure, Nendoroid, Prize Figure, dan Mini Figure (Elysia & Frieren). Silakan ketik 'elysia', 'frieren', atau 'nendoroid'!";
+      }
+
+      let balasan = "Berikut koleksi resmi Kyou Hobby Shop yang cocok dengan pencarianmu:\n\n";
+      scored.forEach(({ p }) => {
+        balasan += `• ${p.nama}\n  🏷️ Kategori: ${p.kategori} | Harga: ${formatIDR(p.harga)}\n  📝 ${p.deskripsi}\n\n`;
+      });
+      balasan += "Silakan klik tombol 'Tanya / Pesan via WA' pada kartu produk untuk langsung terhubung ke WhatsApp kami! ✨";
+      return balasan.trim();
+    }
+
+    function sendChat() {
+      const input = document.getElementById("chatInput");
+      const text = input.value.trim();
+      if (!text) return;
+      const box = document.getElementById("chatMessages");
+      box.innerHTML += `<div class="msg user">${text}</div>`;
+      input.value = "";
+      setTimeout(() => {
+        const reply = jawabRAG(text);
+        box.innerHTML += `<div class="msg bot">${reply}</div>`;
+        box.scrollTop = box.scrollHeight;
+      }, 300);
+      box.scrollTop = box.scrollHeight;
+    }
+
+    renderProducts();
+  </script>
+</body>
+</html>
